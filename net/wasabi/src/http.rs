@@ -1,15 +1,15 @@
 pub struct HttpClient {}
 
 extern crate alloc;
-use core::net::SocketAddr;
 
-use crate::alloc::string::ToString;
-use alloc::format;
 use alloc::string::String;
+use alloc::format;
+use alloc::string::ToString;
 use noli::net::lookup_host;
 use saba_core::error::Error;
 use saba_core::http::HttpResponse;
 use noli::net::SocketAddr;
+use noli::net::TcpStream;
 use alloc::vec::Vec;
 
 impl HttpClient {
@@ -49,10 +49,10 @@ impl HttpClient {
         // ヘッダの追加
         request.push_str("Host: ");
         request.push_str(&host);
-        request.push("\n");
+        request.push('\n');
         request.push_str("Accept: text/html\n");
         request.push_str("Connection: close\n");
-        request.push("\n");
+        request.push('\n');
 
         let _bytes_written = match stream.write(request.as_bytes()) {
             Ok(bytes) => bytes,
@@ -65,7 +65,7 @@ impl HttpClient {
 
         let mut received = Vec::new();
         loop {
-            let mut buf [0u8; 4096];
+            let mut buf = [0u8; 4096];
             let bytes_read = match stream.read(&mut buf) {
                 Ok(bytes) => bytes,
                 Err(_) => (
@@ -82,7 +82,7 @@ impl HttpClient {
             received.extend_from_slice(&buf[..bytes_read]);
         }
 
-        match core::str::fromn_utf8(&received) {
+        match core::str::from_utf8(&received) {
             Ok(response) => HttpResponse::new(response.to_string()),
             Err(e) => Err(Error::Network(format!("Invalid received response: {}", e)))
         }
